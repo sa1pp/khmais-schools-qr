@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#12483f">
-  <meta name="description" content="منصة مدارس خميس مشيط الأهلية لإنشاء رموز QR للروابط والنصوص.">
+  <meta name="description" content="منصة مدارس خميس مشيط الأهلية لإنشاء رموز QR للروابط والنصوص والملفات.">
   <title>منصة QR | مدارس خميس مشيط الأهلية</title>
   <style>
 *{box-sizing:border-box}
@@ -28,7 +28,7 @@ h1{font-size:clamp(27px,4vw,40px);line-height:1.4;margin:9px 0}
 .section-heading{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:19px}
 h2{font-size:19px;margin:0 0 6px}
 .section-heading p{font-size:12px;color:#70817b;margin:0;line-height:1.7}
-.tabs{display:grid;grid-template-columns:1fr 1fr;gap:5px;background:#eff5f1;padding:5px;border-radius:12px;margin-bottom:18px}
+.tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;background:#eff5f1;padding:5px;border-radius:12px;margin-bottom:18px}
 .tab{border:0;border-radius:9px;padding:11px;color:#63756e;background:transparent;font-size:13px;font-weight:700}
 .tab.active{background:white;color:#12483f;box-shadow:0 2px 8px #173e3518}
 form label{display:block;font-size:13px;font-weight:700;margin:0 0 9px}
@@ -88,8 +88,8 @@ footer strong{color:#52665e}
 
     <section class="hero">
       <span class="eyebrow">أداة سهلة وسريعة للاستخدام اليومي</span>
-      <h1>حوّل روابطك ونصوصك إلى رمز QR</h1>
-      <p>أنشئ رمزًا قابلًا للمسح، خصّص لونه وحجمه، ثم نزّله كصورة وشاركه في التعاميم والعروض والمواد التعليمية.</p>
+      <h1>حوّل النصوص والروابط والملفات إلى رمز QR</h1>
+      <p>أنشئ رمزًا للنص أو الموقع أو رابط ملف PDF وWord، خصّص لونه وحجمه، ثم نزّله كصورة وشاركه.</p>
     </section>
 
     <main class="workspace">
@@ -97,7 +97,7 @@ footer strong{color:#52665e}
         <div class="section-heading">
           <div>
             <h2>إنشاء رمز جديد</h2>
-            <p>اختر نوع المحتوى وأدخل الرابط أو النص.</p>
+            <p>اختر نصًا أو موقعًا أو رابط ملف PDF أو Word.</p>
           </div>
           <span class="step">الخطوة 1</span>
         </div>
@@ -105,6 +105,7 @@ footer strong{color:#52665e}
         <div class="tabs" role="group" aria-label="نوع المحتوى">
           <button class="tab active" id="urlTab" type="button" aria-pressed="true">رابط إلكتروني</button>
           <button class="tab" id="textTab" type="button" aria-pressed="false">نص</button>
+          <button class="tab" id="fileTab" type="button" aria-pressed="false">ملف PDF / Word</button>
         </div>
 
         <form id="qrForm">
@@ -153,7 +154,7 @@ footer strong{color:#52665e}
           <div id="emptyState">
             <div class="qr-placeholder" aria-hidden="true">▦</div>
             <strong>رمز QR سيظهر هنا</strong>
-            <p>أدخل رابطًا أو نصًا، ثم اضغط «أنشئ رمز QR».</p>
+            <p>أدخل نصًا أو رابطًا، ثم اضغط «أنشئ رمز QR».</p>
           </div>
           <div id="qrOutput" hidden></div>
         </div>
@@ -182,6 +183,7 @@ footer strong{color:#52665e}
   const form = document.getElementById('qrForm');
   const urlTab = document.getElementById('urlTab');
   const textTab = document.getElementById('textTab');
+  const fileTab = document.getElementById('fileTab');
   const urlInput = document.getElementById('contentInput');
   const textInput = document.getElementById('textInput');
   const inputLabel = document.getElementById('inputLabel');
@@ -199,26 +201,31 @@ footer strong{color:#52665e}
 
   function setMode(nextMode) {
     mode = nextMode;
+    const isText = mode === 'text';
+    const isFile = mode === 'file';
     const isUrl = mode === 'url';
     urlTab.classList.toggle('active', isUrl);
-    textTab.classList.toggle('active', !isUrl);
+    textTab.classList.toggle('active', isText);
+    fileTab.classList.toggle('active', isFile);
     urlTab.setAttribute('aria-pressed', String(isUrl));
-    textTab.setAttribute('aria-pressed', String(!isUrl));
-    urlInput.hidden = !isUrl;
-    textInput.hidden = isUrl;
-    urlInput.required = isUrl;
-    textInput.required = !isUrl;
-    inputLabel.textContent = isUrl ? 'الرابط الإلكتروني' : 'النص';
-    inputHint.textContent = isUrl
-      ? 'أدخل رابطًا يبدأ بـ https:// أو اسم موقع.'
-      : 'يمكنك كتابة نص أو تعليمات أو رسالة قصيرة.';
+    textTab.setAttribute('aria-pressed', String(isText));
+    fileTab.setAttribute('aria-pressed', String(isFile));
+    urlInput.hidden = isText;
+    textInput.hidden = !isText;
+    urlInput.required = !isText;
+    textInput.required = isText;
+    inputLabel.textContent = isText ? 'النص' : (isFile ? 'رابط ملف PDF أو Word' : 'الرابط الإلكتروني');
+    urlInput.placeholder = isFile ? 'https://drive.google.com/...' : 'https://example.com';
+    inputHint.textContent = isText
+      ? 'يمكنك كتابة نص أو تعليمات أو رسالة قصيرة.'
+      : (isFile ? 'ارفع الملف أولًا إلى Google Drive أو OneDrive، واجعل صلاحية الرابط تسمح لمن لديه الرابط بالعرض، ثم الصق رابط المشاركة هنا.' : 'أدخل رابطًا يبدأ بـ https:// أو اسم موقع.');
     status.textContent = '';
   }
 
   function getContent() {
-    const raw = (mode === 'url' ? urlInput.value : textInput.value).trim();
+    const raw = (mode === 'text' ? textInput.value : urlInput.value).trim();
     if (!raw) throw new Error('أدخل المحتوى أولًا.');
-    if (mode === 'url') {
+    if (mode !== 'text') {
       let candidate = raw;
       if (!/^https?:\/\//i.test(candidate)) candidate = 'https://' + candidate;
       let parsed;
@@ -227,6 +234,9 @@ footer strong{color:#52665e}
       }
       if (!['http:', 'https:'].includes(parsed.protocol)) {
         throw new Error('استخدم رابطًا يبدأ بـ http أو https.');
+      }
+      if (mode === 'file' && !/\.(pdf|doc|docx)(?:$|[?#])/i.test(parsed.pathname + parsed.search)) {
+        // Drive/OneDrive sharing URLs often do not expose the file extension. Accept them as share links.
       }
       return parsed.href;
     }
@@ -302,6 +312,7 @@ footer strong{color:#52665e}
 
   urlTab.addEventListener('click', () => setMode('url'));
   textTab.addEventListener('click', () => setMode('text'));
+  fileTab.addEventListener('click', () => setMode('file'));
   form.addEventListener('submit', makeQR);
   downloadBtn.addEventListener('click', downloadQR);
   document.getElementById('clearBtn').addEventListener('click', clearForm);
